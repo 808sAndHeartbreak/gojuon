@@ -1,0 +1,35 @@
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
+# 日志
+*.log
+
+# Node.js (如果将来需要)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python (如果将来需要)
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+
+# Wallpaper Engine 生成的文件
+*.cache
+*.index

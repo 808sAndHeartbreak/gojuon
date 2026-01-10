@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>† 五十音 †</title>
+    <style>
+        :root {
+            --bg-deep: #080808;
+            --ink-black: #000000;
+            --drain-white: #ffffff; 
+            --text-vibrant: #f0f0f0; 
+            --text-soft: #dddddd;    
+            --grid-line: #222222; 
+            --toxic-cyan: #aafff0;
+            --acid-purple: #d0aaff;
+            --romaji-base: #666666; 
+            --ui-border: #333;
+            --glitch-speed: 0.2s;
+        }
+		
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes flash-strobe {
+            0% { filter: brightness(1) contrast(1); }
+            50% { filter: brightness(5) contrast(2); }
+            100% { filter: brightness(1) contrast(1); }
+        }
+
+        @keyframes glitch-text {
+            0% { text-shadow: 2px 0 var(--acid-purple), -2px 0 var(--toxic-cyan); }
+            25% { text-shadow: -2px 0 var(--acid-purple), 2px 0 var(--toxic-cyan); }
+            50% { text-shadow: 2px -2px var(--acid-purple), -1px 2px var(--toxic-cyan); }
+            100% { text-shadow: 2px 0 var(--acid-purple), -2px 0 var(--toxic-cyan); }
+        }
+		
+        @keyframes ethereal-glow {
+            0% { filter: brightness(1) drop-shadow(0 0 5px rgba(188, 0, 255, 0)); }
+            50% { filter: brightness(1.3) drop-shadow(0 0 15px rgba(0, 240, 255, 0.3)); }
+            100% { filter: brightness(1) drop-shadow(0 0 5px rgba(188, 0, 255, 0)); }
+        }
+
+        @keyframes float-ethereal {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                url("data:image/svg+xml,%3Csvg viewBox='0%200%20200%20200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            color: var(--drain-white);
+            font-family: "Impact", "Arial Black", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            animation: drift 30s infinite linear;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: 
+                linear-gradient(rgba(10, 10, 20, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
+                radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.5) 100%);
+            background-size: 100% 4px, cover;
+            pointer-events: none;
+            opacity: 0.4;
+			z-index: 1; 
+			pointer-events: none; /* 极其重要：确保它不吸收鼠标事件 */
+        }
+
+        .header-bar {
+            border-bottom: 1px solid #222;
+            padding: 18px 30px;
+            display: block;
+            position: relative;
+            background: transparent;
+			min-width: 1000px; 
+			box-sizing: border-box;
+			white-space: nowrap;
+			z-index: 100;
+            min-height: 120px;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 40px;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 1;
+        }
+
+        .title-group.hidden {
+            opacity: 0;
+            transform: translateY(-50%) translateX(-20px);
+            pointer-events: none;
+        }
+
+        .header-title {
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            font-size: 80px;
+            color: #fff;
+            line-height: 1;
+            position: relative;
+            transition: all var(--glitch-speed);
+            white-space: nowrap;
+        }
+
+        .header-title .seconds {
+            font-size: 48px;
+            color: #999;
+            display: inline-block;
+            min-width: 72px;
+            text-align: left;
+        }
+
+        .header-subtitle {
+            font-family: monospace;
+            font-size: 32px;
+            color: #bbb;
+            letter-spacing: 0.15em; 
+            transition: all var(--glitch-speed);
+			white-space: nowrap;
+        }
+
+        .title-group:hover .header-title {
+            animation: glitch-text var(--glitch-speed) infinite linear;
+            color: var(--toxic-cyan);
+            text-shadow: 0 0 15px var(--toxic-cyan);
+        }
+
+        .title-group:hover .header-title .seconds {
+            color: var(--toxic-cyan);
+        }
+
+        .title-group:hover .header-subtitle {
+            animation: glitch-text var(--glitch-speed) infinite linear;
+            color: var(--toxic-cyan);
+            text-shadow: 0 0 10px var(--toxic-cyan);
+            letter-spacing: 0.15em; 
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            z-index: 2000;
+        }
+
+        .pager-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--ui-border);
+            color: #777;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 8px 16px;
+            cursor: pointer;
+            letter-spacing: 0.2em;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+			min-width: 90px;
+			text-align: center;
+			box-sizing: border-box;
+			-webkit-user-select: auto !important;
+			user-select: auto !important;
+			pointer-events: auto !important;
+        }
+
+        .toggle-btn.active {
+            color: #fff;
+            border-color: var(--toxic-cyan); 
+            background: rgba(170, 255, 240, 0.08);
+            text-shadow: 0 0 8px var(--toxic-cyan);
+        }
+
+        .toggle-btn::after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 2px;
+            background: var(--toxic-cyan); 
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .toggle-btn.active::after {
+            transform: scaleX(1);
+        }
+
+        /* 汉堡菜单容器 - 固定在右上角 */
+        .hamburger-menu-container {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 5000;
+        }
+
+        /* 汉堡菜单按钮（三条杠） */
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px;
+            transition: all 0.3s;
+            opacity: 0.4;
+        }
+
+        .hamburger-btn:hover {
+            opacity: 1;
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: #666;
+            transition: all 0.3s;
+        }
+
+        .hamburger-btn:hover span {
+            background: var(--toxic-cyan);
+            box-shadow: 0 0 8px var(--toxic-cyan);
+        }
+
+        /* 汉堡菜单下拉 */
+        .hamburger-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--toxic-cyan);
+            min-width: 160px;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(170, 255, 240, 0.2);
+            z-index: 6000;
+        }
+
+        .hamburger-dropdown.show {
+            display: flex;
+        }
+
+        /* 菜单分段 */
+        .menu-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-section + .menu-section {
+            border-top: 2px solid #444;
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        /* 翻页按钮（菜单内） */
+        .menu-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(170, 255, 240, 0.05);
+            border: 1px solid #444;
+            color: #fff;
+            font-family: monospace;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 8px 8px 8px;
+        }
+
+        .menu-action-btn:hover {
+            background: rgba(170, 255, 240, 0.15);
+            border-color: var(--toxic-cyan);
+            color: var(--toxic-cyan);
+            text-shadow: 0 0 8px var(--toxic-cyan);
+        }
+
+        .menu-action-btn .btn-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .menu-action-btn .btn-text {
+            font-weight: 600;
+        }
+
+        /* 下拉菜单容器 */
+        .dropdown-container {
+            position: relative;
+            z-index: 5000;
+        }
+
+        .dropdown-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--ui-border);
+            color: #fff;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 8px 16px;
+            cursor: pointer;
+            letter-spacing: 0.2em;
+            transition: all 0.3s;
+            min-width: 90px;
+            text-align: center;
+            user-select: none;
+        }
+
+        .dropdown-btn:hover {
+            border-color: var(--toxic-cyan);
+            color: var(--toxic-cyan);
+            text-shadow: 0 0 8px var(--toxic-cyan);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--toxic-cyan);
+            min-width: 140px;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(170, 255, 240, 0.2);
+            z-index: 6000;
+        }
+
+        .dropdown-menu.show {
+            display: flex;
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            color: #999;
+            font-family: monospace;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #222;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item.active {
+            background: rgba(170, 255, 240, 0.1);
+            color: var(--toxic-cyan);
+            text-shadow: 0 0 8px var(--toxic-cyan);
+            padding-left: 20px;
+        }
+
+        .dropdown-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: #999;
+            font-family: monospace;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #222;
+            user-select: none;
+        }
+
+        .dropdown-checkbox:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-checkbox:hover {
+            background: rgba(170, 255, 240, 0.05);
+            color: #fff;
+        }
+
+        .dropdown-checkbox input[type="checkbox"] {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border: 1px solid #666;
+            margin-right: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .dropdown-checkbox input[type="checkbox"]:checked {
+            background: var(--toxic-cyan);
+            border-color: var(--toxic-cyan);
+            box-shadow: 0 0 8px var(--toxic-cyan);
+        }
+
+        .dropdown-checkbox input[type="checkbox"]:checked::after {
+            content: "✓";
+            position: absolute;
+            top: -3px;
+            left: 2px;
+            color: #000;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #main-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            border-left: 1px solid var(--grid-line);
+            min-width: 1000px;
+			position: relative; 
+			z-index: 10; /* 确保网格可被点击 */
+        }
+
+        .kana-cell {
+            border-right: 1px solid var(--grid-line);
+            border-bottom: 1px solid var(--grid-line);
+            height: 245px;
+            padding: 15px 20px 10px 20px; 
+            display: flex;
+            flex-direction: column;
+			justify-content: space-between;
+            position: relative;
+            background: var(--ink-black);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            outline: 1px solid transparent;
+            outline-offset: -1px;
+			overflow: hidden;
+        }
+
+        .kana-cell:not(.empty):hover {
+            background: #0d0d14;
+            outline: 1px solid rgba(170, 204, 255, 0.3);
+            z-index: 10;
+        }
+
+        .cell-romaji, .char-unit, .cell-origin {
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .cell-romaji {
+            font-family: "Courier New", monospace;
+            font-size: 2rem; 
+            color: var(--romaji-base); 
+            font-weight: 900; 
+            line-height: 1;
+            z-index: 5;
+            display: inline-block; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: left center; 
+        }
+
+        .kana-cell:hover .cell-romaji,
+        .cell-romaji.romaji-active {
+            color: var(--acid-purple) !important;
+            text-shadow: 0 0 15px var(--acid-purple);
+            transform: scale(1.4); 
+			transform-origin: left center;
+        }
+
+        .kana-focus-zone {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .char-unit {
+            font-size: 5rem; 
+            font-weight: 900; 
+            color: var(--text-soft); 
+            user-select: none;
+            font-family: "Hiragino Mincho ProN", "MS Mincho", serif;
+            animation: float-ethereal 4s infinite ease-in-out;
+            cursor: pointer;
+            opacity: 1;
+            display: inline-block;
+			transform: translateY(0) scale(var(--scale-audio, 1));
+			transition: transform 140ms linear;
+        }
+		
+		.header-bar { z-index: 4000; }
+		.controls-wrapper { z-index: 4500; }
+		.toggle-btn { z-index: 4600; position: relative; }
+
+		.char-unit:hover, .char-unit.linked-active {
+            color: var(--toxic-cyan) !important;
+            transform: translateY(-8px) scale(1.2) !important;
+            filter: drop-shadow(0 0 20px var(--toxic-cyan));
+            z-index: 100;
+            animation-play-state: paused; 
+        }
+		
+		/* 音频响应时的发光效果 */
+		.char-unit.audio-glow {
+			text-shadow: 0 0 calc(var(--glow-intensity, 0) * 30px) var(--toxic-cyan),
+			             0 0 calc(var(--glow-intensity, 0) * 60px) var(--acid-purple);
+		}
+		
+		.kana-cell.audio-active {
+			box-shadow: inset 0 0 30px rgba(170, 255, 240, var(--cell-glow, 0)),
+			            0 0 15px rgba(170, 255, 240, calc(var(--cell-glow, 0) * 0.5));
+		}
+
+        .cell-origin {
+            font-family: "Hiragino Sans", sans-serif;
+            font-size: 26px; 
+            color: #444; 
+            display: flex;
+            justify-content: space-between;
+            padding-top: 8px;
+            border-top: 1px solid #1a1a1a;
+            z-index: 5;
+            opacity: 1;
+        }
+
+        .origin-part {
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            cursor: default;
+        }
+
+        .origin-active, .origin-part:hover {
+		    color: var(--toxic-cyan) !important; 
+            transform: translateY(-3px) scale(1.3); 
+            text-shadow: 0 0 10px var(--toxic-cyan); 
+        }
+
+        .hidden-content {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            filter: blur(8px);
+            transform: translateY(10px) scale(0.8) !important;
+        }
+
+        .kana-cell.empty {
+            background-color: #030303;
+            background-image: radial-gradient(#111 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+        } 
+		
+        footer { 
+            height: 43px; 
+            border-top: 1px solid var(--grid-line);
+        }
+		
+		/* 音乐模块容器 - 与时钟占据同一位置 */
+#media-info {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    opacity: 0;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    filter: grayscale(0.8);
+    pointer-events: none;
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%) translateX(20px);
+    z-index: 50;
+}
+
+#media-info.media-active {
+    opacity: 1 !important;
+    transform: translateY(-50%) translateX(0);
+    filter: grayscale(0);
+    pointer-events: auto;
+}
+
+/* 封面：带青色投影 */
+#album-art-wrap {
+    width: 85px;
+    height: 85px;
+    border: 2px solid #555;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+#album-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    mix-blend-mode: screen;
+    opacity: 0.7;
+    background: #111; /* 背景色，避免空图片时显示白色 */
+    transition: opacity 0.3s;
+}
+
+/* 当父容器准备隐藏时，提前隐藏图片避免显示缺失图标 */
+#media-info:not(.media-active) #album-cover {
+    opacity: 0 !important;
+}
+
+/* 文字信息 */
+.track-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+    max-width: 800px;
+}
+
+#track-title {
+    font-family: "Arial Black", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    font-size: 32px;
+    color: #ffffff;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-shadow: 
+        0 0 8px rgba(170, 255, 240, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.8);
+    line-height: 1.2;
+}
+
+#track-artist {
+    font-family: "Arial", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    font-size: 18px;
+    color: #aaa;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+    </style>
+</head>
+<body>
+		<header class="header-bar">
+			<!-- 时钟显示区域 -->
+			<div class="title-group" id="clock-display">
+				<div class="header-title" id="clock-time">00:00<span class="seconds">:00</span></div>
+				<div class="header-subtitle" id="clock-date">0000-00-00</div>
+			</div>
+
+			<!-- 音乐信息区域（与时钟占据同一位置） -->
+			<div id="media-info">
+				<div id="album-art-wrap">
+					<img id="album-cover" src="">
+				</div>
+				<div class="track-info">
+					<div id="track-title">SIGNAL_LOST</div>
+					<div id="track-artist">UNKNOWN_SOURCE</div>
+				</div>
+			</div>
+
+			<!-- 汉堡菜单 -->
+			<div class="hamburger-menu-container">
+				<button class="hamburger-btn" id="hamburger-btn" aria-label="菜单">
+					<span></span>
+					<span></span>
+					<span></span>
+				</button>
+				<div class="hamburger-dropdown" id="hamburger-menu">
+					<!-- 显示选项 -->
+					<div class="menu-section">
+						<label class="dropdown-checkbox">
+							<input type="checkbox" data-target="cell-romaji" checked>
+							<span>ROMAN</span>
+						</label>
+						<label class="dropdown-checkbox">
+							<input type="checkbox" data-target="hira" checked>
+							<span>HIRA</span>
+						</label>
+						<label class="dropdown-checkbox">
+							<input type="checkbox" data-target="kata" checked>
+							<span>KATA</span>
+						</label>
+						<label class="dropdown-checkbox">
+							<input type="checkbox" data-target="cell-origin" checked>
+							<span>ORIGIN</span>
+						</label>
+					</div>
+					
+					<!-- 翻页按钮 -->
+					<div class="menu-section">
+						<button class="menu-action-btn" id="page-toggle-btn">
+							<span class="btn-icon">⇄</span>
+							<span class="btn-text">翻页</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</header>
+		
+    <main id="main-grid"></main>
+
+    <footer></footer>
+
+    <script>
+    // ============================================================
+    // Wallpaper Engine 监听器 - 必须在最前面定义！
+    // ============================================================
+    
+    // 用于追踪媒体事件是否被触发
+    let mediaEventReceived = false;
+
+    // 媒体信息回调函数
+    function onMediaProperties(event) {
+        mediaEventReceived = true;
+        console.log('[五十音] 媒体信息:', event.title, '-', event.artist);
+        const mediaContainer = document.getElementById('media-info');
+        const clockDisplay = document.getElementById('clock-display');
+        const title = document.getElementById('track-title');
+        const artist = document.getElementById('track-artist');
+        const cover = document.getElementById('album-cover');
+        
+        // 如果没有有效的 title，说明媒体已停止/关闭
+        if (!event.title || event.title.trim() === '') {
+            if (mediaContainer) mediaContainer.classList.remove('media-active');
+            if (clockDisplay) clockDisplay.classList.remove('hidden');
+            // 隐藏封面，防止显示缺失图标
+            if (cover) cover.style.opacity = '0';
+            return;
+        }
+        
+        // 有媒体信息：显示媒体，隐藏时钟
+        if (mediaContainer) mediaContainer.classList.add('media-active');
+        if (clockDisplay) clockDisplay.classList.add('hidden');
+        if (title) title.innerText = event.title.toUpperCase();
+        if (artist) artist.innerText = (event.artist || event.subTitle || '').toUpperCase();
+        // 恢复封面显示（如果有的话）
+        if (cover && cover.src) cover.style.opacity = '0.7';
+    }
+
+    function onMediaThumbnail(event) {
+        mediaEventReceived = true;
+        console.log('[五十音] 媒体封面已更新', event);
+        const cover = document.getElementById('album-cover');
+        const artWrap = document.getElementById('album-art-wrap');
+        
+        // 只在有有效封面时才更新，避免显示空图片
+        if (cover && event.thumbnail && event.thumbnail.length > 0) {
+            cover.src = event.thumbnail;
+        }
+        // 注意：退出音频时不清空 src，保持最后的封面显示
+        
+        // 处理主色调
+        if (event.primaryColor && artWrap) {
+            let color;
+            if (typeof event.primaryColor === 'object') {
+                // 对象格式 {r, g, b}
+                const r = Math.round((event.primaryColor.r || 0) * 255);
+                const g = Math.round((event.primaryColor.g || 0) * 255);
+                const b = Math.round((event.primaryColor.b || 0) * 255);
+                color = `rgb(${r},${g},${b})`;
+            } else {
+                // 字符串格式
+                color = event.primaryColor;
+            }
+            artWrap.style.borderColor = color;
+            artWrap.style.boxShadow = `0 0 25px ${color}`;
+        }
+    }
+
+    function onMediaPlayback(event) {
+        mediaEventReceived = true;
+        console.log('[五十音] 媒体播放状态:', event.state);
+        const mediaContainer = document.getElementById('media-info');
+        const clockDisplay = document.getElementById('clock-display');
+        const artWrap = document.getElementById('album-art-wrap');
+        const cover = document.getElementById('album-cover');
+        
+        // state: 0=停止, 1=播放, 2=暂停
+        if (event.state === 1) {
+            // 播放中：显示音乐信息，隐藏时钟，允许音频响应
+            if (mediaContainer) mediaContainer.classList.add('media-active');
+            if (clockDisplay) clockDisplay.classList.add('hidden');
+            if (artWrap) artWrap.classList.add('audio-playing');
+            if (cover && cover.src) cover.style.opacity = '0.7'; // 恢复封面显示
+            hasAudioSignal = true;
+        } else if (event.state === 2) {
+            // 暂停：显示音乐信息，隐藏时钟，但停止音频响应
+            if (mediaContainer) mediaContainer.classList.add('media-active');
+            if (clockDisplay) clockDisplay.classList.add('hidden');
+            if (artWrap) artWrap.classList.remove('audio-playing');
+            if (cover && cover.src) cover.style.opacity = '0.7'; // 保持封面显示
+            hasAudioSignal = false;
+        } else {
+            // 停止：隐藏音乐信息，显示时钟，停止音频响应
+            if (mediaContainer) mediaContainer.classList.remove('media-active');
+            if (clockDisplay) clockDisplay.classList.remove('hidden');
+            if (artWrap) artWrap.classList.remove('audio-playing');
+            if (cover) cover.style.opacity = '0'; // 立即隐藏封面，防止显示缺失图标
+            hasAudioSignal = false;
+        }
+    }
+
+    function onMediaTimeline(event) {
+        // 可用于显示进度条，暂不使用
+        // event.position, event.duration
+    }
+
+    // 使用新版 API 注册媒体监听器（函数注册方式）
+    if (typeof window.wallpaperRegisterMediaPropertiesListener === 'function') {
+        window.wallpaperRegisterMediaPropertiesListener(onMediaProperties);
+        console.log('[五十音] ✓ MediaPropertiesListener 已注册');
+    }
+    if (typeof window.wallpaperRegisterMediaThumbnailListener === 'function') {
+        window.wallpaperRegisterMediaThumbnailListener(onMediaThumbnail);
+        console.log('[五十音] ✓ MediaThumbnailListener 已注册');
+    }
+    if (typeof window.wallpaperRegisterMediaPlaybackListener === 'function') {
+        window.wallpaperRegisterMediaPlaybackListener(onMediaPlayback);
+        console.log('[五十音] ✓ MediaPlaybackListener 已注册');
+    }
+    if (typeof window.wallpaperRegisterMediaTimelineListener === 'function') {
+        window.wallpaperRegisterMediaTimelineListener(onMediaTimeline);
+        console.log('[五十音] ✓ MediaTimelineListener 已注册');
+    }
+
+    // 同时保留旧版 API 作为备用（兼容性）
+    window.wallpaperPluginListener = {
+        onMediaPlaybackChanged: onMediaPlayback,
+        onMediaPropertiesChanged: onMediaProperties,
+        onMediaThumbnailChanged: onMediaThumbnail
+    };
+
+    // 属性监听器
+    window.wallpaperPropertyListener = {
+        applyUserProperties: function(properties) {
+            const propMap = { 
+                'show_roman': 'cell-romaji', 
+                'show_hira': 'hira', 
+                'show_kata': 'kata', 
+                'show_origin': 'cell-origin' 
+            };
+            for (let key in propMap) {
+                if (properties[key]) {
+                    const checkbox = document.querySelector(`.hamburger-dropdown input[data-target="${propMap[key]}"]`);
+                    if (checkbox) {
+                        checkbox.checked = properties[key].value;
+                    }
+                }
+            }
+            if (typeof syncDisplay === 'function') syncDisplay();
+        }
+    };
+
+    console.log('[五十音] Wallpaper Engine 监听器初始化完成');
+
+    // ============================================================
+    // 1. 全局变量声明
+    // ============================================================
+    let mediaContainer, trackTitle, trackArtist, albumCover;
+    let currentPage = 0;
+
+
+
+    // 2. 五十音图数据
+
+  const kanaData = [
+
+            { r: 'a',  h: 'あ', k: 'ア', o1: '安', o2: '阿' },
+
+            { r: 'i',  h: 'い', k: 'イ', o1: '以', o2: '伊' },
+
+            { r: 'u',  h: 'う', k: 'ウ', o1: '宇', o2: '宇' },
+
+            { r: 'e',  h: 'え', k: 'エ', o1: '衣', o2: '江' },
+
+            { r: 'o',  h: 'お', k: 'オ', o1: '於', o2: '於' },
+
+            { r: 'ka', h: 'か', k: 'カ', o1: '加', o2: '加' },
+
+            { r: 'ki', h: 'き', k: 'キ', o1: '幾', o2: '幾' },
+
+            { r: 'ku', h: 'く', k: 'ク', o1: '久', o2: '久' },
+
+            { r: 'ke', h: 'け', k: 'ケ', o1: '計', o2: '介' },
+
+            { r: 'ko', h: 'こ', k: 'コ', o1: '己', o2: '己' },
+
+            { r: 'sa', h: 'さ', k: 'サ', o1: '左', o2: '散' },
+
+            { r: 'shi',h: 'し', k: 'シ', o1: '之', o2: '之' },
+
+            { r: 'su', h: 'す', k: 'ス', o1: '寸', o2: '須' },
+
+            { r: 'se', h: 'せ', k: 'セ', o1: '世', o2: '世' },
+
+            { r: 'so', h: 'そ', k: 'ソ', o1: '曽', o2: '曽' },
+
+            { r: 'ta', h: 'た', k: 'タ', o1: '太', o2: '多' },
+
+            { r: 'chi',h: 'ち', k: 'チ', o1: '知', o2: '千' },
+
+            { r: 'tsu',h: 'つ', k: 'ツ', o1: '川', o2: '川' },
+
+            { r: 'te', h: 'て', k: 'テ', o1: '天', o2: '天' },
+
+            { r: 'to', h: 'と', k: 'ト', o1: '止', o2: '止' },
+
+            { r: 'na', h: 'な', k: 'ナ', o1: '奈', o2: '奈' },
+
+            { r: 'ni', h: 'に', k: 'ニ', o1: '仁', o2: '二' },
+
+            { r: 'nu', h: 'ぬ', k: 'ヌ', o1: '奴', o2: '奴' },
+
+            { r: 'ne', h: 'ね', k: 'ネ', o1: '祢', o2: '祢' },
+
+            { r: 'no', h: 'の', k: 'ノ', o1: '乃', o2: '乃' },
+
+            { r: 'ha', h: 'は', k: 'ハ', o1: '波', o2: '八' },
+
+            { r: 'hi', h: 'ひ', k: 'ヒ', o1: '比', o2: '比' },
+
+            { r: 'fu', h: 'ふ', k: 'フ', o1: '不', o2: '不' },
+
+            { r: 'he', h: 'へ', k: 'ヘ', o1: '部', o2: '部' },
+
+            { r: 'ho', h: 'ほ', k: 'ホ', o1: '保', o2: '保' },
+
+            { r: 'ma', h: 'ま', k: 'マ', o1: '末', o2: '万' },
+
+            { r: 'mi', h: 'み', k: 'ミ', o1: '美', o2: '三' },
+
+            { r: 'mu', h: 'む', k: 'ム', o1: '武', o2: '牟' },
+
+            { r: 'me', h: 'め', k: 'メ', o1: '女', o2: '女' },
+
+            { r: 'mo', h: 'も', k: 'モ', o1: '毛', o2: '毛' },
+
+            { r: 'ya', h: 'や', k: 'ヤ', o1: '也', o2: '也' },
+
+            null, 
+
+            { r: 'yu', h: 'ゆ', k: 'ユ', o1: '由', o2: '由' },
+
+            null, 
+
+			{ r: 'yo', h: 'よ', k: 'ヨ', o1: '与', o2: '與' },
+
+            { r: 'ra', h: 'ら', k: 'ラ', o1: '良', o2: '良' },
+
+            { r: 'ri', h: 'り', k: 'リ', o1: '利', o2: '利' },
+
+            { r: 'ru', h: 'る', k: 'ル', o1: '留', o2: '流' },
+
+            { r: 're', h: 'れ', k: 'レ', o1: '礼', o2: '礼' },
+
+            { r: 'ro', h: 'ろ', k: 'ロ', o1: '呂', o2: '呂' },
+
+			{ r: 'wa', h: 'わ', k: 'ワ', o1: '和', o2: '和' },
+
+			null,                                      
+
+			{ r: 'n',  h: 'ん', k: 'ン', o1: '無', o2: '尔' },
+
+			null,                                           
+
+			{ r: 'wo', h: 'を', k: 'ヲ', o1: '遠', o2: '乎' }
+
+        ];
+
+
+
+
+
+    // 3. 页面初始化
+
+    window.onload = () => {
+
+        mediaContainer = document.getElementById('media-info');
+
+        trackTitle = document.getElementById('track-title');
+
+        trackArtist = document.getElementById('track-artist');
+
+        albumCover = document.getElementById('album-cover');
+
+        
+        // 给专辑封面添加错误处理，防止显示缺失图标
+        if (albumCover) {
+            albumCover.addEventListener('error', function() {
+                this.style.opacity = '0';
+                console.log('[五十音] 专辑封面加载失败，已隐藏');
+            });
+        }
+        
+        // 初始化下拉菜单
+        initDropdowns();
+
+        // 启动时钟更新
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        renderGrid(0);
+
+    };
+
+    // 下拉菜单初始化
+    function initDropdowns() {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const pageToggleBtn = document.getElementById('page-toggle-btn');
+
+        // 汉堡菜单切换
+        hamburgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hamburgerMenu.classList.toggle('show');
+        });
+
+        // 翻页按钮（点击切换）
+        pageToggleBtn.addEventListener('click', () => {
+            currentPage = currentPage === 0 ? 1 : 0;
+            renderGrid(currentPage);
+            // 不关闭菜单，让用户可以继续操作
+        });
+
+        // 显示复选框变化
+        document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                syncDisplay();
+                // 不关闭菜单，让用户可以连续切换
+            });
+        });
+
+        // 点击外部关闭菜单
+        document.addEventListener('click', () => {
+            hamburgerMenu.classList.remove('show');
+        });
+
+        // 阻止菜单内部点击关闭
+        hamburgerMenu.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    // 时钟更新函数
+    function updateClock() {
+        const now = new Date();
+        
+        // 时间部分：HH:MM 大，:SS 小
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        // 日期部分：YYYY-MM-DD 星期X
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const weekDaysEN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        const weekDaysJP = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+        const weekDay = `${weekDaysEN[now.getDay()]}  ${weekDaysJP[now.getDay()]}`;
+        const dateString = `${year}-${month}-${day} * ${weekDay}`;
+        
+        // 更新DOM - 使用 innerHTML 来保留 span 结构
+        const timeEl = document.getElementById('clock-time');
+        const dateEl = document.getElementById('clock-date');
+        if (timeEl) timeEl.innerHTML = `${hours}:${minutes}<span class="seconds">:${seconds}</span>`;
+        if (dateEl) dateEl.textContent = dateString;
+    }
+
+// ========== 音频响应系统 ==========
+let latestAudio = new Float32Array(128).fill(0);
+let smoothedAudio = new Float32Array(128).fill(0);
+let audioAvailable = false;
+let peak = 0.5;
+let hasAudioSignal = false;
+
+// 接收音频（Wallpaper Engine 提供）
+if (typeof window.wallpaperRegisterAudioListener === 'function') {
+  window.wallpaperRegisterAudioListener(function(audioArray) {
+    const len = Math.min(audioArray.length, 128);
+    let maxv = 0;
+    let sum = 0;
+    for (let i = 0; i < len; i++) {
+      latestAudio[i] = audioArray[i];
+      sum += audioArray[i];
+      if (audioArray[i] > maxv) maxv = audioArray[i];
+    }
+    // 动态峰值调整（更快响应）
+    if (maxv > peak) {
+      peak = peak * 0.7 + maxv * 0.3; // 快速上升
+    } else {
+      peak = peak * 0.995 + maxv * 0.005; // 缓慢下降
+    }
+    if (peak < 0.1) peak = 0.1;
+    
+    // 检测是否有音频信号
+    hasAudioSignal = sum > 0.01;
+    audioAvailable = true;
+  });
+  console.log('[五十音] 音频监听器已注册');
+} else {
+  // 开发模式：模拟音频数据
+  console.log('[五十音] 开发模式：使用模拟音频');
+  setInterval(() => {
+    const t = Date.now() / 1000;
+    for (let i = 0; i < 128; i++) {
+      latestAudio[i] = Math.abs(Math.sin(t * 2 + i * 0.1)) * 0.5 + Math.random() * 0.3;
+    }
+    hasAudioSignal = true;
+    audioAvailable = true;
+  }, 50);
+}
+
+// 音频可视化渲染循环
+function audioToUIFrame() {
+  if (audioAvailable && hasAudioSignal) {
+    // 平滑处理音频数据
+    for (let i = 0; i < 128; i++) {
+      smoothedAudio[i] = smoothedAudio[i] * 0.6 + latestAudio[i] * 0.4;
+    }
+    
+    // 计算不同频段的能量
+    let bassEnergy = 0, midEnergy = 0, highEnergy = 0;
+    for (let i = 0; i < 16; i++) bassEnergy += smoothedAudio[i];
+    for (let i = 16; i < 48; i++) midEnergy += smoothedAudio[i];
+    for (let i = 48; i < 64; i++) highEnergy += smoothedAudio[i];
+    
+    bassEnergy = Math.min(1, (bassEnergy / 16) / peak * 2.5);
+    midEnergy = Math.min(1, (midEnergy / 32) / peak * 2);
+    highEnergy = Math.min(1, (highEnergy / 16) / peak * 2);
+    
+    // 标题栏响应低频（清晰的光边效果）
+    const headerTitle = document.querySelector('.header-title');
+    if (headerTitle) {
+      const intensity = bassEnergy;
+      const titleScale = 1 + bassEnergy * 0.06;
+      // 清晰的多层描边，不模糊
+      headerTitle.style.textShadow = `
+        0 0 1px rgba(170,255,240,${intensity}),
+        0 0 2px rgba(170,255,240,${intensity * 0.8}),
+        1px 1px 0 rgba(138,43,226,${intensity * 0.5}),
+        -1px -1px 0 rgba(138,43,226,${intensity * 0.5})
+      `;
+      headerTitle.style.transform = `scale(${titleScale})`;
+    }
+    
+    // 专辑封面跳动（低频驱动，效果增强）
+    const artWrap = document.getElementById('album-art-wrap');
+    if (artWrap) {
+      const albumScale = 1 + bassEnergy * 0.25;
+      const albumGlow = bassEnergy * 20;
+      artWrap.style.transform = `scale(${albumScale})`;
+      artWrap.style.boxShadow = `0 0 ${albumGlow}px var(--toxic-cyan), 0 0 ${albumGlow * 1.5}px var(--acid-purple)`;
+    }
+    
+    // 每个假名单元格的音频响应（按列分频段）
+    const cells = document.querySelectorAll('.kana-cell:not(.empty)');
+    cells.forEach((cell, idx) => {
+      // 计算列和行（5列布局）
+      const colIdx = idx % 5;
+      const rowIdx = Math.floor(idx / 5);
+      
+      // 按列分配频段：第1列低频，第2-4列中频，第5列高频
+      let baseFreq, freqRange;
+      if (colIdx === 0) {
+        baseFreq = 0; freqRange = 16;  // 低频 0-15
+      } else if (colIdx === 4) {
+        baseFreq = 48; freqRange = 16; // 高频 48-63
+      } else {
+        baseFreq = 16; freqRange = 32; // 中频 16-47
+      }
+      
+      // 同一列内根据行产生音浪变化
+      const freqIdx = baseFreq + (rowIdx * 3 + colIdx * 2) % freqRange;
+      const val = Math.min(1, smoothedAudio[freqIdx] / peak * 3);
+      
+      // 边框发光
+      const borderAlpha = 0.1 + val * 0.9;
+      cell.style.borderColor = `rgba(170,255,240,${borderAlpha.toFixed(3)})`;
+      cell.style.boxShadow = `inset 0 0 ${val * 50}px rgba(170,255,240,${val * 0.4})`;
+      
+      // 假名字符响应（punk/emo风格增强）
+      const chars = cell.querySelectorAll('.char-unit');
+      chars.forEach((ch, ci) => {
+        const charFreq = baseFreq + (rowIdx * 3 + ci * 5) % freqRange;
+        const charVal = Math.min(1, smoothedAudio[charFreq] / peak * 3.5);
+        const scale = 1 + charVal * 0.5;
+        const shake = charVal > 0.6 ? (Math.random() - 0.5) * charVal * 4 : 0;
+        ch.style.transform = `translateY(${-charVal * 12}px) translateX(${shake}px) scale(${scale})`;
+        ch.style.textShadow = `
+          0 0 ${charVal * 8}px rgba(170,255,240,${charVal}),
+          0 0 ${charVal * 15}px rgba(208,170,255,${charVal * 0.8}),
+          ${charVal * 2}px ${charVal * 2}px 0 rgba(255,0,100,${charVal * 0.6}),
+          ${-charVal * 2}px ${-charVal * 1}px 0 rgba(0,255,200,${charVal * 0.5})
+        `;
+      });
+      
+      // 罗马字发光增强
+      const romaji = cell.querySelector('.cell-romaji');
+      if (romaji) {
+        const romajiGlow = val * 20;
+        romaji.style.textShadow = `0 0 ${romajiGlow}px var(--acid-purple), 0 0 ${romajiGlow * 0.5}px rgba(255,0,100,0.5)`;
+      }
+    });
+  } else {
+    // 没有音频时，重置所有音频响应效果
+    const headerTitle = document.querySelector('.header-title');
+    if (headerTitle) {
+      headerTitle.style.textShadow = '';
+      headerTitle.style.transform = '';
+    }
+    
+    const artWrap = document.getElementById('album-art-wrap');
+    if (artWrap) {
+      artWrap.style.transform = '';
+      artWrap.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5)';
+    }
+    
+    const cells = document.querySelectorAll('.kana-cell:not(.empty)');
+    cells.forEach((cell) => {
+      cell.style.borderColor = '';
+      cell.style.boxShadow = '';
+      
+      const chars = cell.querySelectorAll('.char-unit');
+      chars.forEach((ch) => {
+        ch.style.transform = '';
+        ch.style.textShadow = '';
+      });
+      
+      const romaji = cell.querySelector('.cell-romaji');
+      if (romaji) {
+        romaji.style.textShadow = '';
+      }
+    });
+  }
+  requestAnimationFrame(audioToUIFrame);
+}
+requestAnimationFrame(audioToUIFrame);
+
+    // 4. 五十音图渲染逻辑
+
+    function renderGrid(pageIndex) {
+
+        currentPage = pageIndex;
+
+        const gridEl = document.getElementById('main-grid');
+
+        gridEl.innerHTML = '';
+
+        const pageData = pageIndex === 0 ? kanaData.slice(0, 25) : kanaData.slice(25);
+
+        pageData.forEach(item => gridEl.appendChild(createCell(item)));
+
+        
+
+        document.getElementById('btn-p1').classList.toggle('active', pageIndex === 0);
+
+        document.getElementById('btn-p2').classList.toggle('active', pageIndex === 1);
+
+        
+
+        syncDisplay();
+
+        window.scrollTo(0, 0);
+
+    }
+
+
+
+    function createCell(item) {
+
+        const cell = document.createElement('div');
+
+        if (!item) {
+
+            cell.className = 'kana-cell empty';
+
+            return cell;
+
+        }
+
+        cell.className = 'kana-cell';
+
+        cell.innerHTML = `
+
+            <div class="cell-romaji">${item.r}</div>
+
+            <div class="kana-focus-zone">
+
+                <span class="char-unit hira">${item.h}</span>
+
+                <span class="char-unit kata">${item.k}</span>
+
+            </div>
+
+            <div class="cell-origin">
+
+                <span class="origin-part o1">${item.o1}</span>
+
+                <span class="origin-part o2">${item.o2}</span>
+
+            </div>`;
+
+
+
+        const hira = cell.querySelector('.hira');
+
+        const kata = cell.querySelector('.kata');
+
+        const o1 = cell.querySelector('.o1');
+
+        const o2 = cell.querySelector('.o2');
+
+        const romaji = cell.querySelector('.cell-romaji');
+
+
+
+        const bindHover = (trigger, target, romajiEl) => {
+
+            trigger.onmouseenter = () => {
+
+                target.classList.add('origin-active', 'linked-active');
+
+                romajiEl.classList.add('romaji-active');
+
+            };
+
+            trigger.onmouseleave = () => {
+
+                target.classList.remove('origin-active', 'linked-active');
+
+                romajiEl.classList.remove('romaji-active');
+
+            };
+
+        };
+
+
+
+        bindHover(hira, o1, romaji);
+
+        bindHover(kata, o2, romaji);
+
+        bindHover(o1, hira, romaji);
+
+        bindHover(o2, kata, romaji);
+
+        return cell;
+
+    }
+
+
+
+    function syncDisplay() {
+        // 获取所有显示复选框
+        const checkboxes = document.querySelectorAll('#display-menu input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            const targetClass = checkbox.getAttribute('data-target');
+            const isChecked = checkbox.checked;
+            document.querySelectorAll('.' + targetClass).forEach(el => {
+                el.classList.toggle('hidden-content', !isChecked);
+            });
+        });
+    }
+
+	</script>
+</body>
+</html>
