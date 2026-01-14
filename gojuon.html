@@ -86,7 +86,7 @@
 			box-sizing: border-box;
 			white-space: nowrap;
 			z-index: 100;
-            min-height: 180px;
+            min-height: 210px;
         }
 
         .title-group {
@@ -110,7 +110,7 @@
         .header-title {
             font-weight: 900;
             letter-spacing: -0.02em;
-            font-size: 120px;
+            font-size: 135px;
             color: #fff;
             line-height: 1;
             position: relative;
@@ -119,16 +119,16 @@
         }
 
         .header-title .seconds {
-            font-size: 72px;
+            font-size: 81px;
             color: #999;
             display: inline-block;
-            min-width: 110px;
+            min-width: 125px;
             text-align: left;
         }
 
         .header-subtitle {
             font-family: monospace;
-            font-size: 48px;
+            font-size: 54px;
             color: #bbb;
             letter-spacing: 0.15em; 
             transition: all var(--glitch-speed);
@@ -207,8 +207,7 @@
         .hamburger-menu-container {
             position: absolute;
             right: 30px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 30px; /* 上移到靠近角落 */
             z-index: 5000;
         }
 
@@ -226,7 +225,7 @@
             cursor: pointer;
             padding: 8px;
             transition: all 0.3s;
-            opacity: 0.4;
+            opacity: 0.25; /* 降低默认可见度 */
         }
 
         .hamburger-btn:hover {
@@ -237,7 +236,7 @@
             display: block;
             width: 24px;
             height: 2px;
-            background: #666;
+            background: #555; /* 降低线条可见度 */
             transition: all 0.3s;
         }
 
@@ -460,7 +459,7 @@
         .kana-cell {
             border-right: 1px solid var(--grid-line);
             border-bottom: 1px solid var(--grid-line);
-            height: 245px;
+            height: 239px;
             padding: 15px 20px 10px 20px; 
             display: flex;
             flex-direction: column;
@@ -472,6 +471,23 @@
             outline: 1px solid transparent;
             outline-offset: -1px;
 			overflow: hidden;
+        }
+
+        /* 单元格内的音浪背景 */
+        .kana-cell::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--wave-height, 0%);
+            background: linear-gradient(to top, 
+                rgba(170, 255, 240, 0.25) 0%,
+                rgba(208, 170, 255, 0.15) 50%,
+                transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+            transition: height 0.08s ease-out;
         }
 
         .kana-cell:not(.empty):hover {
@@ -493,7 +509,8 @@
             z-index: 5;
             display: inline-block; 
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            transform-origin: left center; 
+            transform-origin: left center;
+            position: relative;
         }
 
         .kana-cell:hover .cell-romaji,
@@ -522,6 +539,8 @@
             opacity: 1;
             display: inline-block;
 			transform: translateY(0) scale(1);
+			position: relative;
+			z-index: 10;
 			/* 移除 transition，让音频响应更即时 */
         }
 		
@@ -559,11 +578,14 @@
             border-top: 1px solid #1a1a1a;
             z-index: 5;
             opacity: 1;
+            position: relative;
         }
 
         .origin-part {
             transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             cursor: default;
+            position: relative;
+            z-index: 10;
         }
 
         .origin-active, .origin-part:hover {
@@ -616,8 +638,8 @@
 
 /* 封面：黑胶唱片效果 */
 #album-art-wrap {
-    width: 130px;
-    height: 130px;
+    width: 180px;
+    height: 180px;
     border: 3px solid #333;
     border-radius: 50%; /* 圆形 */
     position: relative;
@@ -625,8 +647,8 @@
     background: #111;
     flex-shrink: 0;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    /* 暂停时的缓冲停止效果 */
-    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* 暂停时的缓冲停止效果（延长到1.2秒） */
+    transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* 播放中移除过渡，让旋转流畅 */
@@ -641,8 +663,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid rgba(170, 255, 240, 0.3);
     border-radius: 50%;
@@ -674,12 +696,12 @@
     text-align: left;
     flex: 1;
     min-width: 0;
-    max-width: 1500px;
+    max-width: 1000px;
 }
 
 #track-title {
     font-family: "Arial Black", "Helvetica Neue", "Microsoft YaHei", sans-serif;
-    font-size: 50px;
+    font-size: 56px;
     color: #ffffff;
     font-weight: 900;
     letter-spacing: 0.05em;
@@ -695,16 +717,56 @@
 
 #track-artist {
     font-family: "Arial", "Helvetica Neue", "Microsoft YaHei", sans-serif;
-    font-size: 30px;
+    font-size: 34px;
     color: #aaa;
     letter-spacing: 0.1em;
-    margin-top: 8px;
+    margin-top: 10px;
     font-weight: 500;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     width: 100%;
+}
+
+/* 音浪频谱可视化器 */
+#audio-spectrum {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 190px; /* 大幅增加高度，接近header高度210px */
+    padding: 6px 40px; /* 恢复合理的padding */
+    background: rgba(0, 0, 0, 0.4);
+    border: none;
+    border-radius: 6px;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.3),
+        0 4px 15px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+/* 有音频时显示 */
+#audio-spectrum.active {
+    opacity: 1;
+}
+
+.spectrum-bar {
+    width: 7px;
+    background: linear-gradient(to top, 
+        rgba(100, 200, 200, 0.6) 0%,      /* 暗青色，降低亮度 */
+        rgba(140, 120, 200, 0.5) 100%);   /* 暗紫色，降低亮度 */
+    border-radius: 2px;
+    min-height: 3px;
+    transition: height 0.06s ease-out;
+    box-shadow: 
+        0 0 4px rgba(100, 200, 200, 0.25),   /* 减弱发光 */
+        0 0 2px rgba(140, 120, 200, 0.2);    /* 减弱发光 */
 }
 
     </style>
@@ -726,6 +788,11 @@
 					<div id="track-title">SIGNAL_LOST</div>
 					<div id="track-artist">UNKNOWN_SOURCE</div>
 				</div>
+			</div>
+
+			<!-- 音浪频谱可视化器 -->
+			<div id="audio-spectrum">
+				<!-- 频谱条将由JavaScript动态生成 -->
 			</div>
 
 			<!-- 汉堡菜单 -->
@@ -788,14 +855,8 @@
     <footer></footer>
 
     <script>
-    // ============================================================
-    // Wallpaper Engine 监听器 - 必须在最前面定义！
-    // ============================================================
-    
-    // 用于追踪媒体事件是否被触发
     let mediaEventReceived = false;
 
-    // 媒体信息回调函数
     function onMediaProperties(event) {
         mediaEventReceived = true;
         console.log('[五十音] 媒体信息:', event.title, '-', event.artist);
@@ -805,7 +866,6 @@
         const artist = document.getElementById('track-artist');
         const cover = document.getElementById('album-cover');
         
-        // 更新媒体状态缓存
         if (event.title && event.title.trim() !== '') {
             lastMediaState.hasMedia = true;
             lastMediaState.title = event.title;
@@ -816,7 +876,6 @@
             lastMediaState.artist = '';
         }
         
-        // 如果音频响应被禁用，保持显示时钟（但仍然缓存状态）
         if (!audioResponseEnabled) {
             if (mediaContainer) mediaContainer.classList.remove('media-active');
             if (clockDisplay) clockDisplay.classList.remove('hidden');
@@ -824,21 +883,17 @@
             return;
         }
         
-        // 如果没有有效的 title，说明媒体已停止/关闭
         if (!event.title || event.title.trim() === '') {
             if (mediaContainer) mediaContainer.classList.remove('media-active');
             if (clockDisplay) clockDisplay.classList.remove('hidden');
-            // 隐藏封面，防止显示缺失图标
             if (cover) cover.style.opacity = '0';
             return;
         }
         
-        // 有媒体信息：显示媒体，隐藏时钟
         if (mediaContainer) mediaContainer.classList.add('media-active');
         if (clockDisplay) clockDisplay.classList.add('hidden');
         if (title) title.innerText = event.title.toUpperCase();
         if (artist) artist.innerText = (event.artist || event.subTitle || '').toUpperCase();
-        // 恢复封面显示（如果有的话）
         if (cover && cover.src) cover.style.opacity = '0.7';
     }
 
@@ -846,7 +901,6 @@
         mediaEventReceived = true;
         console.log('[五十音] 媒体封面已更新', event);
         
-        // 如果音频响应被禁用，不更新封面
         if (!audioResponseEnabled) {
             return;
         }
@@ -854,29 +908,23 @@
         const cover = document.getElementById('album-cover');
         const artWrap = document.getElementById('album-art-wrap');
         
-        // 只在有有效封面时才更新，避免显示空图片
         if (cover && event.thumbnail && event.thumbnail.length > 0) {
             cover.src = event.thumbnail;
-            // 切歌时重置旋转角度为0度
             vinylRotation = 0;
             if (artWrap) {
                 artWrap.style.transform = 'rotate(0deg)';
             }
             console.log('[五十音] 切歌检测：唱片旋转已重置为0度');
         }
-        // 注意：退出音频时不清空 src，保持最后的封面显示
         
-        // 处理主色调
         if (event.primaryColor && artWrap) {
             let color;
             if (typeof event.primaryColor === 'object') {
-                // 对象格式 {r, g, b}
                 const r = Math.round((event.primaryColor.r || 0) * 255);
                 const g = Math.round((event.primaryColor.g || 0) * 255);
                 const b = Math.round((event.primaryColor.b || 0) * 255);
                 color = `rgb(${r},${g},${b})`;
             } else {
-                // 字符串格式
                 color = event.primaryColor;
             }
             artWrap.style.borderColor = color;
@@ -892,10 +940,8 @@
         const artWrap = document.getElementById('album-art-wrap');
         const cover = document.getElementById('album-cover');
         
-        // 更新播放状态缓存（state: 0=停止, 1=播放, 2=暂停）
         lastMediaState.isPlaying = (event.state === 1 || event.state === 2);
         
-        // 如果音频响应被禁用，保持显示时钟（但仍然缓存状态）
         if (!audioResponseEnabled) {
             if (mediaContainer) mediaContainer.classList.remove('media-active');
             if (clockDisplay) clockDisplay.classList.remove('hidden');
@@ -905,41 +951,41 @@
             return;
         }
         
-        // state: 0=停止, 1=播放, 2=暂停
         if (event.state === 1) {
-            // 播放中：显示音乐信息，隐藏时钟，允许音频响应
             if (mediaContainer) mediaContainer.classList.add('media-active');
             if (clockDisplay) clockDisplay.classList.add('hidden');
-            if (artWrap) artWrap.classList.add('audio-playing');
-            if (cover && cover.src) cover.style.opacity = '0.7'; // 恢复封面显示
+            if (artWrap) {
+                artWrap.classList.add('audio-playing');
+                artWrap.style.transition = 'none';
+                void artWrap.offsetHeight;
+            }
+            if (cover && cover.src) cover.style.opacity = '0.7';
             hasAudioSignal = true;
-            vinylIsPlaying = true; // 唱片开始旋转
-            lastVinylUpdateTime = Date.now(); // 记录开始时间
+            vinylIsPlaying = true;
+            lastVinylUpdateTime = Date.now();
         } else if (event.state === 2) {
-            // 暂停：显示音乐信息，隐藏时钟，但停止音频响应
             if (mediaContainer) mediaContainer.classList.add('media-active');
             if (clockDisplay) clockDisplay.classList.add('hidden');
-            if (artWrap) artWrap.classList.remove('audio-playing');
-            if (cover && cover.src) cover.style.opacity = '0.7'; // 保持封面显示
+            if (artWrap) {
+                artWrap.classList.remove('audio-playing');
+                artWrap.style.transition = 'transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            }
+            if (cover && cover.src) cover.style.opacity = '0.7';
             hasAudioSignal = false;
-            vinylIsPlaying = false; // 唱片停止旋转（保持当前角度）
+            vinylIsPlaying = false;
         } else {
-            // 停止：隐藏音乐信息，显示时钟，停止音频响应
             if (mediaContainer) mediaContainer.classList.remove('media-active');
             if (clockDisplay) clockDisplay.classList.remove('hidden');
             if (artWrap) artWrap.classList.remove('audio-playing');
-            if (cover) cover.style.opacity = '0'; // 立即隐藏封面，防止显示缺失图标
+            if (cover) cover.style.opacity = '0';
             hasAudioSignal = false;
             vinylIsPlaying = false; // 唱片停止旋转
         }
     }
 
     function onMediaTimeline(event) {
-        // 可用于显示进度条，暂不使用
-        // event.position, event.duration
     }
 
-    // 使用新版 API 注册媒体监听器（函数注册方式）
     if (typeof window.wallpaperRegisterMediaPropertiesListener === 'function') {
         window.wallpaperRegisterMediaPropertiesListener(onMediaProperties);
         console.log('[五十音] ✓ MediaPropertiesListener 已注册');
@@ -957,14 +1003,12 @@
         console.log('[五十音] ✓ MediaTimelineListener 已注册');
     }
 
-    // 同时保留旧版 API 作为备用（兼容性）
     window.wallpaperPluginListener = {
         onMediaPlaybackChanged: onMediaPlayback,
         onMediaPropertiesChanged: onMediaProperties,
         onMediaThumbnailChanged: onMediaThumbnail
     };
 
-    // 属性监听器
     window.wallpaperPropertyListener = {
         applyUserProperties: function(properties) {
             const propMap = { 
@@ -982,7 +1026,6 @@
                 }
             }
             
-            // 处理音频响应开关
             if (properties['audio_response']) {
                 const audioToggle = document.getElementById('audio-response-toggle');
                 if (audioToggle) {
@@ -997,12 +1040,10 @@
                     const cover = document.getElementById('album-cover');
                     
                     if (!audioResponseEnabled) {
-                        // 关闭音频响应：立即切换到时钟显示
                         if (mediaContainer) mediaContainer.classList.remove('media-active');
                         if (clockDisplay) clockDisplay.classList.remove('hidden');
                         if (cover) cover.style.opacity = '0';
                     } else if (!wasEnabled && audioResponseEnabled) {
-                        // 从关闭变为开启：检查是否有缓存的媒体状态并恢复
                         if (lastMediaState.hasMedia && lastMediaState.isPlaying) {
                             if (mediaContainer) mediaContainer.classList.add('media-active');
                             if (clockDisplay) clockDisplay.classList.add('hidden');
@@ -1015,7 +1056,6 @@
                 }
             }
             
-            // 处理表格显示开关
             if (properties['show_sheet']) {
                 const sheetToggle = document.getElementById('sheet-toggle');
                 if (sheetToggle) {
@@ -1024,7 +1064,6 @@
                 }
             }
             
-            // 同步显示状态和依赖控件
             if (typeof syncDisplay === 'function') syncDisplay();
             if (typeof updateDependentControls === 'function') updateDependentControls();
         }
@@ -1032,15 +1071,11 @@
 
     console.log('[五十音] Wallpaper Engine 监听器初始化完成');
 
-    // ============================================================
-    // 1. 全局变量声明
-    // ============================================================
     let mediaContainer, trackTitle, trackArtist, albumCover;
     let currentPage = 0;
-    let audioResponseEnabled = true; // 音频响应开关，默认开启
-    let sheetEnabled = true; // 表格显示开关，默认开启
+    let audioResponseEnabled = true;
+    let sheetEnabled = true;
     
-    // 存储最后的媒体状态，用于恢复音频响应时同步
     let lastMediaState = {
         isPlaying: false,
         hasMedia: false,
@@ -1048,16 +1083,11 @@
         artist: ''
     };
     
-    // 黑胶唱片旋转控制
-    let vinylRotation = 0; // 当前旋转角度
-    let vinylIsPlaying = false; // 是否正在播放
-    let lastVinylUpdateTime = 0; // 上次更新时间
-    const VINYL_RPM = 33.33; // 每分钟33.33转（模拟真实黑胶）
-    const VINYL_DEGREES_PER_MS = (360 * VINYL_RPM) / 60000; // 每毫秒旋转的角度
-
-
-
-    // 2. 五十音图数据
+    let vinylRotation = 0;
+    let vinylIsPlaying = false;
+    let lastVinylUpdateTime = 0;
+    const VINYL_RPM = 16.67;
+    const VINYL_DEGREES_PER_MS = (360 * VINYL_RPM) / 60000;
 
   const kanaData = [
 
@@ -1180,7 +1210,9 @@
         albumCover = document.getElementById('album-cover');
 
         
-        // 给专辑封面添加错误处理，防止显示缺失图标
+        // 初始化音浪频谱
+        initAudioSpectrum();
+        
         if (albumCover) {
             albumCover.addEventListener('error', function() {
                 this.style.opacity = '0';
@@ -1191,16 +1223,31 @@
         // 初始化下拉菜单
         initDropdowns();
 
-        // 启动时钟更新
         updateClock();
         setInterval(updateClock, 1000);
 
         renderGrid(0);
         
-        // 初始化控件状态
         updateDependentControls();
 
     };
+
+    // 初始化音浪频谱可视化器
+    function initAudioSpectrum() {
+        const spectrum = document.getElementById('audio-spectrum');
+        if (!spectrum) return;
+        
+        // 创建120个频谱条（大幅增加，填满空间）
+        const barCount = 120;
+        for (let i = 0; i < barCount; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'spectrum-bar';
+            bar.style.height = '3px'; // 初始高度
+            spectrum.appendChild(bar);
+        }
+        
+        console.log('[五十音] 音浪频谱可视化器已初始化，条数:', barCount);
+    }
 
     // 下拉菜单初始化
     function initDropdowns() {
@@ -1210,20 +1257,16 @@
         const audioToggle = document.getElementById('audio-response-toggle');
         const sheetToggle = document.getElementById('sheet-toggle');
 
-        // 汉堡菜单切换
         hamburgerBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             hamburgerMenu.classList.toggle('show');
         });
 
-        // 翻页按钮（点击切换）
         pageToggleBtn.addEventListener('click', () => {
             currentPage = currentPage === 0 ? 1 : 0;
             renderGrid(currentPage);
-            // 不关闭菜单，让用户可以继续操作
         });
 
-        // 音频响应开关
         if (audioToggle) {
             audioToggle.addEventListener('change', () => {
                 audioResponseEnabled = audioToggle.checked;
@@ -1234,14 +1277,11 @@
                 const cover = document.getElementById('album-cover');
                 
                 if (!audioResponseEnabled) {
-                    // 关闭音频响应：强制显示时钟并隐藏媒体信息
                     if (mediaContainer) mediaContainer.classList.remove('media-active');
                     if (clockDisplay) clockDisplay.classList.remove('hidden');
                     if (cover) cover.style.opacity = '0';
                 } else {
-                    // 开启音频响应：检查是否有缓存的媒体状态并恢复
                     if (lastMediaState.hasMedia && lastMediaState.isPlaying) {
-                        // 恢复媒体信息显示
                         if (mediaContainer) mediaContainer.classList.add('media-active');
                         if (clockDisplay) clockDisplay.classList.add('hidden');
                         if (title) title.innerText = lastMediaState.title.toUpperCase();
@@ -1253,7 +1293,6 @@
             });
         }
 
-        // 表格显示开关
         if (sheetToggle) {
             sheetToggle.addEventListener('change', () => {
                 sheetEnabled = sheetToggle.checked;
@@ -1261,33 +1300,26 @@
             });
         }
 
-        // 显示复选框变化
         document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]:not(#audio-response-toggle):not(#sheet-toggle)').forEach(checkbox => {
             checkbox.addEventListener('change', () => {
                 syncDisplay();
-                // 不关闭菜单，让用户可以连续切换
             });
         });
 
-        // 点击外部关闭菜单
         document.addEventListener('click', () => {
             hamburgerMenu.classList.remove('show');
         });
 
-        // 阻止菜单内部点击关闭
         hamburgerMenu.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    // 时钟更新函数
     function updateClock() {
         const now = new Date();
         
-        // 时间部分：HH:MM 大，:SS 小
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
         
-        // 日期部分：YYYY-MM-DD 星期X
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
@@ -1296,21 +1328,18 @@
         const weekDay = `${weekDaysEN[now.getDay()]}  ${weekDaysJP[now.getDay()]}`;
         const dateString = `${year}-${month}-${day} * ${weekDay}`;
         
-        // 更新DOM - 使用 innerHTML 来保留 span 结构
         const timeEl = document.getElementById('clock-time');
         const dateEl = document.getElementById('clock-date');
         if (timeEl) timeEl.innerHTML = `${hours}:${minutes}<span class="seconds">:${seconds}</span>`;
         if (dateEl) dateEl.textContent = dateString;
     }
 
-// ========== 音频响应系统 ==========
 let latestAudio = new Float32Array(128).fill(0);
 let smoothedAudio = new Float32Array(128).fill(0);
 let audioAvailable = false;
 let peak = 0.5;
 let hasAudioSignal = false;
 
-// 接收音频（Wallpaper Engine 提供）
 if (typeof window.wallpaperRegisterAudioListener === 'function') {
   window.wallpaperRegisterAudioListener(function(audioArray) {
     const len = Math.min(audioArray.length, 128);
@@ -1321,21 +1350,18 @@ if (typeof window.wallpaperRegisterAudioListener === 'function') {
       sum += audioArray[i];
       if (audioArray[i] > maxv) maxv = audioArray[i];
     }
-    // 动态峰值调整（更快响应）
     if (maxv > peak) {
-      peak = peak * 0.7 + maxv * 0.3; // 快速上升
+      peak = peak * 0.7 + maxv * 0.3;
     } else {
-      peak = peak * 0.995 + maxv * 0.005; // 缓慢下降
+      peak = peak * 0.995 + maxv * 0.005;
     }
     if (peak < 0.1) peak = 0.1;
     
-    // 检测是否有音频信号
     hasAudioSignal = sum > 0.01;
     audioAvailable = true;
   });
   console.log('[五十音] 音频监听器已注册');
 } else {
-  // 开发模式：模拟音频数据
   console.log('[五十音] 开发模式：使用模拟音频');
   setInterval(() => {
     const t = Date.now() / 1000;
@@ -1347,15 +1373,12 @@ if (typeof window.wallpaperRegisterAudioListener === 'function') {
   }, 50);
 }
 
-// 音频可视化渲染循环
 function audioToUIFrame() {
   if (audioAvailable && hasAudioSignal && audioResponseEnabled) {
-    // 平滑处理音频数据
     for (let i = 0; i < 128; i++) {
       smoothedAudio[i] = smoothedAudio[i] * 0.6 + latestAudio[i] * 0.4;
     }
     
-    // 计算不同频段的能量
     let bassEnergy = 0, midEnergy = 0, highEnergy = 0;
     for (let i = 0; i < 16; i++) bassEnergy += smoothedAudio[i];
     for (let i = 16; i < 48; i++) midEnergy += smoothedAudio[i];
@@ -1365,12 +1388,30 @@ function audioToUIFrame() {
     midEnergy = Math.min(1, (midEnergy / 32) / peak * 2);
     highEnergy = Math.min(1, (highEnergy / 16) / peak * 2);
     
-    // 标题栏响应低频（清晰的光边效果）
+    // 更新频谱可视化器
+    const spectrum = document.getElementById('audio-spectrum');
+    const spectrumBars = spectrum ? spectrum.querySelectorAll('.spectrum-bar') : [];
+    if (spectrumBars.length > 0) {
+      spectrum.classList.add('active');
+      spectrumBars.forEach((bar, i) => {
+        const freqIndex = Math.floor(i * (64 / spectrumBars.length));
+        const value = Math.min(1, smoothedAudio[freqIndex] / peak * 3.5);
+        const height = 3 + value * 175; // 大幅增加：3-178px（容器190px - padding 12px = 178px可用）
+        bar.style.height = `${height}px`;
+        
+        // 减弱动态发光，配合暗色调
+        const glowIntensity = value * 6;
+        bar.style.boxShadow = `
+          0 0 ${glowIntensity}px rgba(100, 200, 200, ${value * 0.3}),
+          0 0 ${glowIntensity * 0.5}px rgba(140, 120, 200, ${value * 0.25})
+        `;
+      });
+    }
+    
     const headerTitle = document.querySelector('.header-title');
     if (headerTitle) {
       const intensity = bassEnergy;
       const titleScale = 1 + bassEnergy * 0.06;
-      // 清晰的多层描边，不模糊
       headerTitle.style.textShadow = `
         0 0 1px rgba(170,255,240,${intensity}),
         0 0 2px rgba(170,255,240,${intensity * 0.8}),
@@ -1380,41 +1421,30 @@ function audioToUIFrame() {
       headerTitle.style.transform = `scale(${titleScale})`;
     }
     
-    // 黑胶唱片旋转更新
     const artWrap = document.getElementById('album-art-wrap');
     if (artWrap) {
-      // 发光效果（低频驱动）
-      const albumGlow = bassEnergy * 25;
-      artWrap.style.boxShadow = `0 0 ${albumGlow}px var(--toxic-cyan), 0 0 ${albumGlow * 1.5}px var(--acid-purple)`;
-      
-      // 旋转更新
+      // 只处理旋转，不做发光效果（黑胶唱片保持稳定）
       if (vinylIsPlaying) {
         const now = Date.now();
         const deltaTime = now - lastVinylUpdateTime;
         lastVinylUpdateTime = now;
         
-        // 计算旋转角度增量
         vinylRotation += VINYL_DEGREES_PER_MS * deltaTime;
-        vinylRotation = vinylRotation % 360; // 保持在0-360范围内
+        vinylRotation = vinylRotation % 360;
         
-        // 应用旋转
         artWrap.style.transform = `rotate(${vinylRotation}deg)`;
       }
     }
     
-    // 背景纹理的音频响应效果（流动 + glitch）
     const body = document.body;
     if (body) {
-      // 使用高频制造 glitch 色彩偏移
       const glitchIntensity = highEnergy;
-      const hueShift = midEnergy * 30; // 中频驱动色相旋转
-      const brightness = 1 + bassEnergy * 0.15; // 低频驱动亮度脉冲
+      const hueShift = midEnergy * 30;
+      const brightness = 1 + bassEnergy * 0.15;
       
-      // 背景位置流动（基于低频和中频的组合）
       const flowX = Math.sin(Date.now() / 3000 + bassEnergy * 5) * midEnergy * 20;
       const flowY = Math.cos(Date.now() / 4000 + midEnergy * 3) * bassEnergy * 15;
       
-      // Glitch 效果：在高频峰值时产生色彩分离和扭曲
       if (glitchIntensity > 0.6) {
         const glitchX = (Math.random() - 0.5) * glitchIntensity * 3;
         const glitchSkew = (Math.random() - 0.5) * glitchIntensity * 0.5;
@@ -1426,7 +1456,6 @@ function audioToUIFrame() {
         `;
         body.style.transform = `translateX(${glitchX}px) skewX(${glitchSkew}deg)`;
       } else {
-        // 正常状态：平滑的色彩和亮度变化
         body.style.filter = `
           hue-rotate(${hueShift}deg) 
           brightness(${brightness})
@@ -1435,48 +1464,45 @@ function audioToUIFrame() {
         body.style.transform = 'translateX(0) skewX(0deg)';
       }
       
-      // 背景图片位置流动
       body.style.backgroundPosition = `${flowX}px ${flowY}px`;
     }
     
-    // 每个假名单元格的音频响应（按列分频段）
-    // 只有在表格显示时才处理，提升性能
     if (sheetEnabled) {
       const cells = document.querySelectorAll('.kana-cell:not(.empty)');
       cells.forEach((cell, idx) => {
-      // 计算列和行（5列布局）
       const colIdx = idx % 5;
       const rowIdx = Math.floor(idx / 5);
       
-      // 按列分配频段：第1列低频，第2-4列中频，第5列高频
       let baseFreq, freqRange;
       if (colIdx === 0) {
-        baseFreq = 0; freqRange = 16;  // 低频 0-15
+        baseFreq = 0; freqRange = 16;
       } else if (colIdx === 4) {
-        baseFreq = 48; freqRange = 16; // 高频 48-63
+        baseFreq = 48; freqRange = 16;
       } else {
-        baseFreq = 16; freqRange = 32; // 中频 16-47
+        baseFreq = 16; freqRange = 32;
       }
       
-      // 同一列内根据行产生音浪变化
       const freqIdx = baseFreq + (rowIdx * 3 + colIdx * 2) % freqRange;
       const val = Math.min(1, smoothedAudio[freqIdx] / peak * 3);
       
-      // 边框发光 + 内外扩散光（音浪感增强）
       const borderAlpha = 0.1 + val * 0.9;
-      const glowSpread = val * 60; // 内扩散范围
-      const glowIntensity = val * 0.5; // 发光强度
-      const outerGlow = val * 20; // 外发光
+      const glowSpread = val * 60;
+      const glowIntensity = val * 0.5;
+      const outerGlow = val * 20;
       
       cell.style.borderColor = `rgba(170,255,240,${borderAlpha.toFixed(3)})`;
-      // 组合内发光、外发光，营造音浪向内向外扩散的感觉
       cell.style.boxShadow = `
         inset 0 0 ${glowSpread}px ${glowSpread * 0.3}px rgba(170,255,240,${glowIntensity}),
         inset 0 0 ${glowSpread * 0.5}px rgba(208,170,255,${glowIntensity * 0.6}),
         0 0 ${outerGlow}px rgba(170,255,240,${val * 0.3})
       `;
       
-      // 假名字符响应（增强放大动画感）
+      const waveHeight = val * 100;
+      cell.style.setProperty('--wave-height', `${waveHeight}%`);
+      if (val > 0) {
+        cell.setAttribute('data-wave', waveHeight.toFixed(1));
+      }
+      
       const chars = cell.querySelectorAll('.char-unit');
       chars.forEach((ch, ci) => {
         const charFreq = baseFreq + (rowIdx * 3 + ci * 5) % freqRange;
@@ -1485,10 +1511,8 @@ function audioToUIFrame() {
         const scale = 1 + charVal * 0.5;
         const shake = charVal > 0.6 ? (Math.random() - 0.5) * charVal * 4 : 0;
         
-        // 保持原有的上浮和抖动效果，增强缩放
         ch.style.transform = `translateY(${-charVal * 12}px) translateX(${shake}px) scale(${scale})`;
         
-        // 光效保持原样
         ch.style.textShadow = `
           0 0 ${charVal * 8}px rgba(170,255,240,${charVal}),
           0 0 ${charVal * 15}px rgba(208,170,255,${charVal * 0.8}),
@@ -1497,16 +1521,25 @@ function audioToUIFrame() {
         `;
       });
       
-      // 罗马字发光增强
       const romaji = cell.querySelector('.cell-romaji');
       if (romaji) {
         const romajiGlow = val * 20;
         romaji.style.textShadow = `0 0 ${romajiGlow}px var(--acid-purple), 0 0 ${romajiGlow * 0.5}px rgba(255,0,100,0.5)`;
       }
     });
-    } // 结束 if (sheetEnabled)
+    }
   } else {
-    // 没有音频时，重置所有音频响应效果
+    // 隐藏频谱可视化器
+    const spectrum = document.getElementById('audio-spectrum');
+    if (spectrum) {
+      spectrum.classList.remove('active');
+      const spectrumBars = spectrum.querySelectorAll('.spectrum-bar');
+      spectrumBars.forEach(bar => {
+        bar.style.height = '3px';
+        bar.style.boxShadow = '0 0 4px rgba(100, 200, 200, 0.25), 0 0 2px rgba(140, 120, 200, 0.2)';
+      });
+    }
+    
     const headerTitle = document.querySelector('.header-title');
     if (headerTitle) {
       headerTitle.style.textShadow = '';
@@ -1515,11 +1548,9 @@ function audioToUIFrame() {
     
     const artWrap = document.getElementById('album-art-wrap');
     if (artWrap) {
-      // 不重置 transform，保持唱片当前旋转角度
-      artWrap.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5)';
+      // 不重置 boxShadow，保持默认样式
     }
     
-    // 重置背景效果
     const body = document.body;
     if (body) {
       body.style.filter = '';
@@ -1527,12 +1558,12 @@ function audioToUIFrame() {
       body.style.backgroundPosition = '';
     }
     
-    // 只有在表格显示时才重置样式
     if (sheetEnabled) {
       const cells = document.querySelectorAll('.kana-cell:not(.empty)');
       cells.forEach((cell) => {
         cell.style.borderColor = '';
         cell.style.boxShadow = '';
+        cell.style.setProperty('--wave-height', '0%');
         
         const chars = cell.querySelectorAll('.char-unit');
         chars.forEach((ch) => {
@@ -1550,8 +1581,6 @@ function audioToUIFrame() {
   requestAnimationFrame(audioToUIFrame);
 }
 requestAnimationFrame(audioToUIFrame);
-
-    // 4. 五十音图渲染逻辑
 
     function renderGrid(pageIndex) {
 
@@ -1659,13 +1688,10 @@ requestAnimationFrame(audioToUIFrame);
 
 
 
-    // 更新依赖控件的禁用状态
     function updateDependentControls() {
-        // 获取所有显示选项的复选框容器
         const displayCheckboxes = document.querySelectorAll('.hamburger-dropdown input[type="checkbox"][data-target]');
         const pageToggleBtn = document.getElementById('page-toggle-btn');
         
-        // 根据 SHEET 状态禁用/启用显示选项
         displayCheckboxes.forEach(checkbox => {
             const label = checkbox.closest('.dropdown-checkbox');
             if (label) {
@@ -1677,7 +1703,6 @@ requestAnimationFrame(audioToUIFrame);
             }
         });
         
-        // 根据 SHEET 状态禁用/启用翻页按钮
         if (pageToggleBtn) {
             pageToggleBtn.disabled = !sheetEnabled;
         }
@@ -1686,23 +1711,19 @@ requestAnimationFrame(audioToUIFrame);
     function syncDisplay() {
         const mainGrid = document.getElementById('main-grid');
         
-        // 更新依赖控件的禁用状态
         updateDependentControls();
         
-        // 如果表格开关关闭，隐藏整个表格
         if (!sheetEnabled) {
             if (mainGrid) {
                 mainGrid.style.display = 'none';
             }
-            return; // 表格隐藏后，其他选项无需处理
+            return;
         }
         
-        // 表格开关开启，显示表格
         if (mainGrid) {
             mainGrid.style.display = 'grid';
         }
         
-        // 获取所有显示复选框（排除 audio-response-toggle 和 sheet-toggle）
         const checkboxes = document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]:not(#audio-response-toggle):not(#sheet-toggle)');
         checkboxes.forEach(checkbox => {
             const targetClass = checkbox.getAttribute('data-target');
