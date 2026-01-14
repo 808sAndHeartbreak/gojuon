@@ -1276,12 +1276,6 @@ requestAnimationFrame(audioToUIFrame);
 
         
 
-        document.getElementById('btn-p1').classList.toggle('active', pageIndex === 0);
-
-        document.getElementById('btn-p2').classList.toggle('active', pageIndex === 1);
-
-        
-
         syncDisplay();
 
         window.scrollTo(0, 0);
@@ -1376,7 +1370,7 @@ requestAnimationFrame(audioToUIFrame);
 
     function syncDisplay() {
         // 获取所有显示复选框
-        const checkboxes = document.querySelectorAll('#display-menu input[type="checkbox"]');
+        const checkboxes = document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
             const targetClass = checkbox.getAttribute('data-target');
             const isChecked = checkbox.checked;
