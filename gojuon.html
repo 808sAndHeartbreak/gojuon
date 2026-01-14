@@ -429,6 +429,24 @@
             font-weight: bold;
         }
 
+        /* 禁用状态样式 */
+        .dropdown-checkbox.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .dropdown-checkbox.disabled:hover {
+            background: transparent;
+            color: #999;
+        }
+
+        .menu-action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         #main-grid {
             width: 100%;
             display: grid;
@@ -692,6 +710,22 @@
 					<span></span>
 				</button>
 				<div class="hamburger-dropdown" id="hamburger-menu">
+					<!-- 音频响应开关 -->
+					<div class="menu-section">
+						<label class="dropdown-checkbox">
+							<input type="checkbox" id="audio-response-toggle" checked>
+							<span>AUDIO RESPONSE</span>
+						</label>
+					</div>
+					
+					<!-- 表格总开关 -->
+					<div class="menu-section">
+						<label class="dropdown-checkbox">
+							<input type="checkbox" id="sheet-toggle" checked>
+							<span>SHEET</span>
+						</label>
+					</div>
+					
 					<!-- 显示选项 -->
 					<div class="menu-section">
 						<label class="dropdown-checkbox">
@@ -745,6 +779,14 @@
         const artist = document.getElementById('track-artist');
         const cover = document.getElementById('album-cover');
         
+        // 如果音频响应被禁用，保持显示时钟
+        if (!audioResponseEnabled) {
+            if (mediaContainer) mediaContainer.classList.remove('media-active');
+            if (clockDisplay) clockDisplay.classList.remove('hidden');
+            if (cover) cover.style.opacity = '0';
+            return;
+        }
+        
         // 如果没有有效的 title，说明媒体已停止/关闭
         if (!event.title || event.title.trim() === '') {
             if (mediaContainer) mediaContainer.classList.remove('media-active');
@@ -766,6 +808,12 @@
     function onMediaThumbnail(event) {
         mediaEventReceived = true;
         console.log('[五十音] 媒体封面已更新', event);
+        
+        // 如果音频响应被禁用，不更新封面
+        if (!audioResponseEnabled) {
+            return;
+        }
+        
         const cover = document.getElementById('album-cover');
         const artWrap = document.getElementById('album-art-wrap');
         
@@ -800,6 +848,16 @@
         const clockDisplay = document.getElementById('clock-display');
         const artWrap = document.getElementById('album-art-wrap');
         const cover = document.getElementById('album-cover');
+        
+        // 如果音频响应被禁用，保持显示时钟
+        if (!audioResponseEnabled) {
+            if (mediaContainer) mediaContainer.classList.remove('media-active');
+            if (clockDisplay) clockDisplay.classList.remove('hidden');
+            if (artWrap) artWrap.classList.remove('audio-playing');
+            if (cover) cover.style.opacity = '0';
+            hasAudioSignal = false;
+            return;
+        }
         
         // state: 0=停止, 1=播放, 2=暂停
         if (event.state === 1) {
@@ -873,7 +931,36 @@
                     }
                 }
             }
+            
+            // 处理音频响应开关
+            if (properties['audio_response']) {
+                const audioToggle = document.getElementById('audio-response-toggle');
+                if (audioToggle) {
+                    audioToggle.checked = properties['audio_response'].value;
+                    audioResponseEnabled = properties['audio_response'].value;
+                    
+                    // 如果关闭音频响应，立即切换到时钟显示
+                    if (!audioResponseEnabled) {
+                        const mediaContainer = document.getElementById('media-info');
+                        const clockDisplay = document.getElementById('clock-display');
+                        if (mediaContainer) mediaContainer.classList.remove('media-active');
+                        if (clockDisplay) clockDisplay.classList.remove('hidden');
+                    }
+                }
+            }
+            
+            // 处理表格显示开关
+            if (properties['show_sheet']) {
+                const sheetToggle = document.getElementById('sheet-toggle');
+                if (sheetToggle) {
+                    sheetToggle.checked = properties['show_sheet'].value;
+                    sheetEnabled = properties['show_sheet'].value;
+                }
+            }
+            
+            // 同步显示状态和依赖控件
             if (typeof syncDisplay === 'function') syncDisplay();
+            if (typeof updateDependentControls === 'function') updateDependentControls();
         }
     };
 
@@ -884,6 +971,8 @@
     // ============================================================
     let mediaContainer, trackTitle, trackArtist, albumCover;
     let currentPage = 0;
+    let audioResponseEnabled = true; // 音频响应开关，默认开启
+    let sheetEnabled = true; // 表格显示开关，默认开启
 
 
 
@@ -1026,6 +1115,9 @@
         setInterval(updateClock, 1000);
 
         renderGrid(0);
+        
+        // 初始化控件状态
+        updateDependentControls();
 
     };
 
@@ -1034,6 +1126,8 @@
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const hamburgerMenu = document.getElementById('hamburger-menu');
         const pageToggleBtn = document.getElementById('page-toggle-btn');
+        const audioToggle = document.getElementById('audio-response-toggle');
+        const sheetToggle = document.getElementById('sheet-toggle');
 
         // 汉堡菜单切换
         hamburgerBtn.addEventListener('click', (e) => {
@@ -1048,8 +1142,30 @@
             // 不关闭菜单，让用户可以继续操作
         });
 
+        // 音频响应开关
+        if (audioToggle) {
+            audioToggle.addEventListener('change', () => {
+                audioResponseEnabled = audioToggle.checked;
+                // 如果关闭音频响应，强制显示时钟并隐藏媒体信息
+                if (!audioResponseEnabled) {
+                    const mediaContainer = document.getElementById('media-info');
+                    const clockDisplay = document.getElementById('clock-display');
+                    if (mediaContainer) mediaContainer.classList.remove('media-active');
+                    if (clockDisplay) clockDisplay.classList.remove('hidden');
+                }
+            });
+        }
+
+        // 表格显示开关
+        if (sheetToggle) {
+            sheetToggle.addEventListener('change', () => {
+                sheetEnabled = sheetToggle.checked;
+                syncDisplay();
+            });
+        }
+
         // 显示复选框变化
-        document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]').forEach(checkbox => {
+        document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]:not(#audio-response-toggle):not(#sheet-toggle)').forEach(checkbox => {
             checkbox.addEventListener('change', () => {
                 syncDisplay();
                 // 不关闭菜单，让用户可以连续切换
@@ -1136,7 +1252,7 @@ if (typeof window.wallpaperRegisterAudioListener === 'function') {
 
 // 音频可视化渲染循环
 function audioToUIFrame() {
-  if (audioAvailable && hasAudioSignal) {
+  if (audioAvailable && hasAudioSignal && audioResponseEnabled) {
     // 平滑处理音频数据
     for (let i = 0; i < 128; i++) {
       smoothedAudio[i] = smoothedAudio[i] * 0.6 + latestAudio[i] * 0.4;
@@ -1177,8 +1293,10 @@ function audioToUIFrame() {
     }
     
     // 每个假名单元格的音频响应（按列分频段）
-    const cells = document.querySelectorAll('.kana-cell:not(.empty)');
-    cells.forEach((cell, idx) => {
+    // 只有在表格显示时才处理，提升性能
+    if (sheetEnabled) {
+      const cells = document.querySelectorAll('.kana-cell:not(.empty)');
+      cells.forEach((cell, idx) => {
       // 计算列和行（5列布局）
       const colIdx = idx % 5;
       const rowIdx = Math.floor(idx / 5);
@@ -1225,6 +1343,7 @@ function audioToUIFrame() {
         romaji.style.textShadow = `0 0 ${romajiGlow}px var(--acid-purple), 0 0 ${romajiGlow * 0.5}px rgba(255,0,100,0.5)`;
       }
     });
+    } // 结束 if (sheetEnabled)
   } else {
     // 没有音频时，重置所有音频响应效果
     const headerTitle = document.querySelector('.header-title');
@@ -1239,22 +1358,25 @@ function audioToUIFrame() {
       artWrap.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5)';
     }
     
-    const cells = document.querySelectorAll('.kana-cell:not(.empty)');
-    cells.forEach((cell) => {
-      cell.style.borderColor = '';
-      cell.style.boxShadow = '';
-      
-      const chars = cell.querySelectorAll('.char-unit');
-      chars.forEach((ch) => {
-        ch.style.transform = '';
-        ch.style.textShadow = '';
+    // 只有在表格显示时才重置样式
+    if (sheetEnabled) {
+      const cells = document.querySelectorAll('.kana-cell:not(.empty)');
+      cells.forEach((cell) => {
+        cell.style.borderColor = '';
+        cell.style.boxShadow = '';
+        
+        const chars = cell.querySelectorAll('.char-unit');
+        chars.forEach((ch) => {
+          ch.style.transform = '';
+          ch.style.textShadow = '';
+        });
+        
+        const romaji = cell.querySelector('.cell-romaji');
+        if (romaji) {
+          romaji.style.textShadow = '';
+        }
       });
-      
-      const romaji = cell.querySelector('.cell-romaji');
-      if (romaji) {
-        romaji.style.textShadow = '';
-      }
-    });
+    }
   }
   requestAnimationFrame(audioToUIFrame);
 }
@@ -1368,15 +1490,59 @@ requestAnimationFrame(audioToUIFrame);
 
 
 
+    // 更新依赖控件的禁用状态
+    function updateDependentControls() {
+        // 获取所有显示选项的复选框容器
+        const displayCheckboxes = document.querySelectorAll('.hamburger-dropdown input[type="checkbox"][data-target]');
+        const pageToggleBtn = document.getElementById('page-toggle-btn');
+        
+        // 根据 SHEET 状态禁用/启用显示选项
+        displayCheckboxes.forEach(checkbox => {
+            const label = checkbox.closest('.dropdown-checkbox');
+            if (label) {
+                if (sheetEnabled) {
+                    label.classList.remove('disabled');
+                } else {
+                    label.classList.add('disabled');
+                }
+            }
+        });
+        
+        // 根据 SHEET 状态禁用/启用翻页按钮
+        if (pageToggleBtn) {
+            pageToggleBtn.disabled = !sheetEnabled;
+        }
+    }
+
     function syncDisplay() {
-        // 获取所有显示复选框
-        const checkboxes = document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]');
+        const mainGrid = document.getElementById('main-grid');
+        
+        // 更新依赖控件的禁用状态
+        updateDependentControls();
+        
+        // 如果表格开关关闭，隐藏整个表格
+        if (!sheetEnabled) {
+            if (mainGrid) {
+                mainGrid.style.display = 'none';
+            }
+            return; // 表格隐藏后，其他选项无需处理
+        }
+        
+        // 表格开关开启，显示表格
+        if (mainGrid) {
+            mainGrid.style.display = 'grid';
+        }
+        
+        // 获取所有显示复选框（排除 audio-response-toggle 和 sheet-toggle）
+        const checkboxes = document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]:not(#audio-response-toggle):not(#sheet-toggle)');
         checkboxes.forEach(checkbox => {
             const targetClass = checkbox.getAttribute('data-target');
-            const isChecked = checkbox.checked;
-            document.querySelectorAll('.' + targetClass).forEach(el => {
-                el.classList.toggle('hidden-content', !isChecked);
-            });
+            if (targetClass) {
+                const isChecked = checkbox.checked;
+                document.querySelectorAll('.' + targetClass).forEach(el => {
+                    el.classList.toggle('hidden-content', !isChecked);
+                });
+            }
         });
     }
 
