@@ -614,16 +614,40 @@
     pointer-events: auto;
 }
 
-/* 封面：带青色投影 */
+/* 封面：黑胶唱片效果 */
 #album-art-wrap {
     width: 130px;
     height: 130px;
-    border: 2px solid #555;
+    border: 3px solid #333;
+    border-radius: 50%; /* 圆形 */
     position: relative;
     overflow: hidden;
     background: #111;
     flex-shrink: 0;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    /* 暂停时的缓冲停止效果 */
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 播放中移除过渡，让旋转流畅 */
+#album-art-wrap.audio-playing {
+    transition: none;
+}
+
+/* 黑胶唱片中心圆点 */
+#album-art-wrap::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(170, 255, 240, 0.3);
+    border-radius: 50%;
+    z-index: 10;
+    pointer-events: none;
 }
 
 #album-cover {
@@ -634,6 +658,7 @@
     opacity: 0.7;
     background: #111; /* 背景色，避免空图片时显示白色 */
     transition: opacity 0.3s;
+    border-radius: 50%; /* 圆形 */
 }
 
 /* 当父容器准备隐藏时，提前隐藏图片避免显示缺失图标 */
@@ -832,6 +857,12 @@
         // 只在有有效封面时才更新，避免显示空图片
         if (cover && event.thumbnail && event.thumbnail.length > 0) {
             cover.src = event.thumbnail;
+            // 切歌时重置旋转角度为0度
+            vinylRotation = 0;
+            if (artWrap) {
+                artWrap.style.transform = 'rotate(0deg)';
+            }
+            console.log('[五十音] 切歌检测：唱片旋转已重置为0度');
         }
         // 注意：退出音频时不清空 src，保持最后的封面显示
         
@@ -882,6 +913,8 @@
             if (artWrap) artWrap.classList.add('audio-playing');
             if (cover && cover.src) cover.style.opacity = '0.7'; // 恢复封面显示
             hasAudioSignal = true;
+            vinylIsPlaying = true; // 唱片开始旋转
+            lastVinylUpdateTime = Date.now(); // 记录开始时间
         } else if (event.state === 2) {
             // 暂停：显示音乐信息，隐藏时钟，但停止音频响应
             if (mediaContainer) mediaContainer.classList.add('media-active');
@@ -889,6 +922,7 @@
             if (artWrap) artWrap.classList.remove('audio-playing');
             if (cover && cover.src) cover.style.opacity = '0.7'; // 保持封面显示
             hasAudioSignal = false;
+            vinylIsPlaying = false; // 唱片停止旋转（保持当前角度）
         } else {
             // 停止：隐藏音乐信息，显示时钟，停止音频响应
             if (mediaContainer) mediaContainer.classList.remove('media-active');
@@ -896,6 +930,7 @@
             if (artWrap) artWrap.classList.remove('audio-playing');
             if (cover) cover.style.opacity = '0'; // 立即隐藏封面，防止显示缺失图标
             hasAudioSignal = false;
+            vinylIsPlaying = false; // 唱片停止旋转
         }
     }
 
@@ -1012,6 +1047,13 @@
         title: '',
         artist: ''
     };
+    
+    // 黑胶唱片旋转控制
+    let vinylRotation = 0; // 当前旋转角度
+    let vinylIsPlaying = false; // 是否正在播放
+    let lastVinylUpdateTime = 0; // 上次更新时间
+    const VINYL_RPM = 33.33; // 每分钟33.33转（模拟真实黑胶）
+    const VINYL_DEGREES_PER_MS = (360 * VINYL_RPM) / 60000; // 每毫秒旋转的角度
 
 
 
@@ -1338,13 +1380,26 @@ function audioToUIFrame() {
       headerTitle.style.transform = `scale(${titleScale})`;
     }
     
-    // 专辑封面跳动（低频驱动，效果增强）
+    // 黑胶唱片旋转更新
     const artWrap = document.getElementById('album-art-wrap');
     if (artWrap) {
-      const albumScale = 1 + bassEnergy * 0.25;
-      const albumGlow = bassEnergy * 20;
-      artWrap.style.transform = `scale(${albumScale})`;
+      // 发光效果（低频驱动）
+      const albumGlow = bassEnergy * 25;
       artWrap.style.boxShadow = `0 0 ${albumGlow}px var(--toxic-cyan), 0 0 ${albumGlow * 1.5}px var(--acid-purple)`;
+      
+      // 旋转更新
+      if (vinylIsPlaying) {
+        const now = Date.now();
+        const deltaTime = now - lastVinylUpdateTime;
+        lastVinylUpdateTime = now;
+        
+        // 计算旋转角度增量
+        vinylRotation += VINYL_DEGREES_PER_MS * deltaTime;
+        vinylRotation = vinylRotation % 360; // 保持在0-360范围内
+        
+        // 应用旋转
+        artWrap.style.transform = `rotate(${vinylRotation}deg)`;
+      }
     }
     
     // 背景纹理的音频响应效果（流动 + glitch）
@@ -1460,7 +1515,7 @@ function audioToUIFrame() {
     
     const artWrap = document.getElementById('album-art-wrap');
     if (artWrap) {
-      artWrap.style.transform = '';
+      // 不重置 transform，保持唱片当前旋转角度
       artWrap.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5)';
     }
     
