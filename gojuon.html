@@ -1002,6 +1002,29 @@
         window.wallpaperRegisterMediaTimelineListener(onMediaTimeline);
         console.log('[五十音] ✓ MediaTimelineListener 已注册');
     }
+    
+    // 注册鼠标监听器，追踪壁纸是否真正可见
+    if (typeof window.wallpaperRegisterMouseListener === 'function') {
+        window.wallpaperRegisterMouseListener((event) => {
+            // event.buttons: 0 表示没有按下按钮，即单纯的鼠标移动
+            // 只要鼠标进入壁纸区域（没有被其他窗口遮挡），就标记为可见
+            wallpaperIsVisible = true;
+        });
+        console.log('[五十音] ✓ MouseListener 已注册（追踪壁纸可见性）');
+    }
+    
+    // 全局鼠标移出检测：如果鼠标离开文档，则清除所有悬停状态
+    document.addEventListener('mouseleave', () => {
+        wallpaperIsVisible = false;
+        // 清除所有悬停状态
+        document.querySelectorAll('.origin-active, .linked-active, .romaji-active').forEach(el => {
+            el.classList.remove('origin-active', 'linked-active', 'romaji-active');
+        });
+    });
+    
+    document.addEventListener('mouseenter', () => {
+        wallpaperIsVisible = true;
+    });
 
     window.wallpaperPluginListener = {
         onMediaPlaybackChanged: onMediaPlayback,
@@ -1064,6 +1087,10 @@
                 }
             }
             
+            // 【重要】Wallpaper Engine 设置面板的设置会覆盖 localStorage
+            // 将设置面板的值保存到 localStorage，保持同步
+            saveSettings();
+            
             if (typeof syncDisplay === 'function') syncDisplay();
             if (typeof updateDependentControls === 'function') updateDependentControls();
         }
@@ -1088,6 +1115,141 @@
     let lastVinylUpdateTime = 0;
     const VINYL_RPM = 16.67;
     const VINYL_DEGREES_PER_MS = (360 * VINYL_RPM) / 60000;
+    
+    // 追踪壁纸是否可见（鼠标是否真正悬停在壁纸上）
+    let wallpaperIsVisible = false;
+    
+    // ========== 安全的持久化存储 ==========
+    const STORAGE_KEY = 'gojuon_settings_v1';
+    const STORAGE_AVAILABLE = (function() {
+        try {
+            const test = '__storage_test__';
+            localStorage.setItem(test, test);
+            localStorage.removeItem(test);
+            return true;
+        } catch (e) {
+            console.warn('[五十音] localStorage 不可用，设置将不会保存');
+            return false;
+        }
+    })();
+    
+    /**
+     * 安全地保存设置到 localStorage
+     */
+    function saveSettings() {
+        if (!STORAGE_AVAILABLE) return;
+        
+        try {
+            const settings = {
+                version: 1,
+                audioResponseEnabled: audioResponseEnabled,
+                sheetEnabled: sheetEnabled,
+                displayOptions: {
+                    roman: document.querySelector('[data-target="cell-romaji"]')?.checked ?? true,
+                    hira: document.querySelector('[data-target="hira"]')?.checked ?? true,
+                    kata: document.querySelector('[data-target="kata"]')?.checked ?? true,
+                    origin: document.querySelector('[data-target="cell-origin"]')?.checked ?? true
+                },
+                currentPage: currentPage
+            };
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            console.log('[五十音] 设置已保存');
+        } catch (e) {
+            console.warn('[五十音] 保存设置失败:', e);
+        }
+    }
+    
+    /**
+     * 安全地加载设置从 localStorage
+     * @returns {Object|null} 返回设置对象，失败则返回 null
+     */
+    function loadSettings() {
+        if (!STORAGE_AVAILABLE) return null;
+        
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (!data) return null;
+            
+            const settings = JSON.parse(data);
+            
+            // 数据验证
+            if (!settings || typeof settings !== 'object') {
+                console.warn('[五十音] 设置数据格式无效');
+                return null;
+            }
+            
+            // 验证布尔值
+            const validateBoolean = (val, defaultVal) => typeof val === 'boolean' ? val : defaultVal;
+            
+            return {
+                audioResponseEnabled: validateBoolean(settings.audioResponseEnabled, true),
+                sheetEnabled: validateBoolean(settings.sheetEnabled, true),
+                displayOptions: {
+                    roman: validateBoolean(settings.displayOptions?.roman, true),
+                    hira: validateBoolean(settings.displayOptions?.hira, true),
+                    kata: validateBoolean(settings.displayOptions?.kata, true),
+                    origin: validateBoolean(settings.displayOptions?.origin, true)
+                },
+                currentPage: (settings.currentPage === 0 || settings.currentPage === 1) ? settings.currentPage : 0
+            };
+        } catch (e) {
+            console.warn('[五十音] 加载设置失败:', e);
+            return null;
+        }
+    }
+    
+    /**
+     * 应用加载的设置到界面
+     * @param {Object} settings 设置对象
+     */
+    function applySettings(settings) {
+        if (!settings) return;
+        
+        try {
+            // 应用主开关
+            audioResponseEnabled = settings.audioResponseEnabled;
+            sheetEnabled = settings.sheetEnabled;
+            currentPage = settings.currentPage;
+            
+            // 应用到复选框（在 DOM 加载后）
+            const audioToggle = document.getElementById('audio-response-toggle');
+            const sheetToggle = document.getElementById('sheet-toggle');
+            
+            if (audioToggle) audioToggle.checked = settings.audioResponseEnabled;
+            if (sheetToggle) sheetToggle.checked = settings.sheetEnabled;
+            
+            // 应用显示选项
+            const checkboxes = {
+                'cell-romaji': settings.displayOptions.roman,
+                'hira': settings.displayOptions.hira,
+                'kata': settings.displayOptions.kata,
+                'cell-origin': settings.displayOptions.origin
+            };
+            
+            Object.entries(checkboxes).forEach(([target, checked]) => {
+                const checkbox = document.querySelector(`[data-target="${target}"]`);
+                if (checkbox) checkbox.checked = checked;
+            });
+            
+            // 【重要】立即同步 UI 显示，确保设置生效
+            if (typeof syncDisplay === 'function') {
+                syncDisplay();
+            }
+            
+            // 如果音频响应被禁用，确保媒体信息不显示
+            if (!settings.audioResponseEnabled) {
+                const mediaContainer = document.getElementById('media-info');
+                const clockDisplay = document.getElementById('clock-display');
+                if (mediaContainer) mediaContainer.classList.remove('media-active');
+                if (clockDisplay) clockDisplay.classList.remove('hidden');
+            }
+            
+            console.log('[五十音] 已恢复上次的设置');
+        } catch (e) {
+            console.warn('[五十音] 应用设置失败:', e);
+        }
+    }
 
   const kanaData = [
 
@@ -1209,14 +1371,13 @@
 
         albumCover = document.getElementById('album-cover');
 
-        
         // 初始化音浪频谱
         initAudioSpectrum();
         
         if (albumCover) {
             albumCover.addEventListener('error', function() {
                 this.style.opacity = '0';
-                console.log('[五十音] 专辑封面加载失败，已隐藏');
+                console.log('[五十音] 专辑封面加载失败,已隐藏');
             });
         }
         
@@ -1226,8 +1387,16 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        renderGrid(0);
+        // 【安全加载】尝试恢复上次的设置（必须在 initDropdowns 之后）
+        const savedSettings = loadSettings();
+        if (savedSettings) {
+            applySettings(savedSettings);
+        }
+
+        // 使用保存的页码或默认第一页
+        renderGrid(savedSettings?.currentPage ?? 0);
         
+        // syncDisplay 会在 renderGrid 内部调用，所以这里不需要额外调用
         updateDependentControls();
 
     };
@@ -1265,6 +1434,7 @@
         pageToggleBtn.addEventListener('click', () => {
             currentPage = currentPage === 0 ? 1 : 0;
             renderGrid(currentPage);
+            saveSettings(); // 保存页码
         });
 
         if (audioToggle) {
@@ -1290,6 +1460,8 @@
                         console.log('[五十音] 音频响应已恢复，重新显示媒体信息');
                     }
                 }
+                
+                saveSettings(); // 保存音频响应设置
             });
         }
 
@@ -1297,12 +1469,14 @@
             sheetToggle.addEventListener('change', () => {
                 sheetEnabled = sheetToggle.checked;
                 syncDisplay();
+                saveSettings(); // 保存表格显示设置
             });
         }
 
         document.querySelectorAll('.hamburger-dropdown input[type="checkbox"]:not(#audio-response-toggle):not(#sheet-toggle)').forEach(checkbox => {
             checkbox.addEventListener('change', () => {
                 syncDisplay();
+                saveSettings(); // 保存显示选项设置
             });
         });
 
@@ -1653,23 +1827,25 @@ requestAnimationFrame(audioToUIFrame);
 
 
         const bindHover = (trigger, target, romajiEl) => {
-
+            let isHovering = false;
+            
             trigger.onmouseenter = () => {
-
-                target.classList.add('origin-active', 'linked-active');
-
-                romajiEl.classList.add('romaji-active');
-
+                isHovering = true;
+                // 只有在壁纸可见时才应用悬停效果
+                if (wallpaperIsVisible) {
+                    target.classList.add('origin-active', 'linked-active');
+                    romajiEl.classList.add('romaji-active');
+                }
             };
 
             trigger.onmouseleave = () => {
-
+                isHovering = false;
                 target.classList.remove('origin-active', 'linked-active');
-
                 romajiEl.classList.remove('romaji-active');
-
             };
-
+            
+            // 保存引用以便后续清理
+            trigger._hoverData = { target, romajiEl, isHovering: () => isHovering };
         };
 
 
